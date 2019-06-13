@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Categories{% endblock %}
+
+{% block content_title %}Category{% endblock %}
+
+{% block content %}
+    <ul>
+        {% for category in object_list.items %}
+        <li><a href="{{ url_for('entries.category_detail', slug=category.slug)}}">{{ category.name }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
