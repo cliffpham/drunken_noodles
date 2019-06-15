@@ -10,6 +10,8 @@
         {% endfor %}
     </ul>
     <a href="{{ url_for('entries.edit', slug=entry.slug) }}">Edit</a>
+    <br>
+    <a href="{{ url_for('entries.delete', slug=entry.slug) }}">Delete</a>
 
     <p>Published {{ entry.created_timestamp.strftime('%m/%d/%Y')}}</p>
 {% endblock %}

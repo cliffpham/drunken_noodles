@@ -17,6 +17,7 @@ entry_categories = db.Table('entry_categories',
 class Entry(db.Model):
     STATUS_PUBLIC = 0
     STATUS_DRAFT = 1
+    STATUS_DELETED = 2
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
