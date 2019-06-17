@@ -1,9 +1,12 @@
-from flask import Blueprint, redirect, render_template, request, url_for
+import os
 
-from helpers import object_list, entry_list
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from werkzeug import secure_filename
+
+from helpers import object_list, entry_list, get_entry_or_404
 from models import Entry, Category, Tag
-from entries.forms import EntryForm
-from app import db
+from entries.forms import EntryForm, ImageForm
+from app import app, db
 
 entries = Blueprint('entries', __name__,
 template_folder='templates')
@@ -56,9 +59,24 @@ def create_post():
             entry = form.save_entry(Entry())
             db.session.add(entry)
             db.session.commit()
+            flash('Entry "%s" created successfully.' % entry.title, 'success')
             return redirect(url_for('entries.detail', slug=entry.slug))
         else:
             return 'error'
+
+@entries.route('/image-upload/', methods=['GET', 'POST'])
+def image_upload():
+    if request.method == 'POST':
+        form = ImageForm(request.form)
+        if form.validate():
+            image_file = request.files['file']
+            filename = os.path.join(app.config['IMAGES_DIR'], secure_filename(image_file.filename))
+            image_file.save(filename)
+            flash('Saved %s' % os.path.basename(filename), 'success')
+            return redirect(url_for('entries.index'))
+    form = ImageForm()
+    return render_template('entries/image_upload.html', form=form)
+
 
 @entries.route('/<slug>/')
 def detail(slug):
@@ -73,24 +91,26 @@ def edit(slug):
 
 @entries.route('/<slug>/edit/', methods=['POST'])
 def edit_entry(slug):
-    entry = Entry.query.filter(Entry.slug == slug).first_or_404()
+    entry = get_entry_or_404(slug)
     if request.method == 'POST':
         form = EntryForm(request.form, obj=entry)
         if form.validate():
             entry = form.save_entry(entry)
             db.session.add(entry)
             db.session.commit()
+            flash('Entry "%s" created successfully.' % entry.title, 'success')
             return redirect(url_for('entries.detail', slug=entry.slug))
         else:
             return 'error'
 
 @entries.route('/<slug>/delete/', methods=['GET', 'POST'])
 def delete(slug):
-    entry = Entry.query.filter(Entry.slug == slug).first_or_404()
+    entry = get_entry_or_404(slug)
     if request.method == "POST":
         entry.status = Entry.STATUS_DELETED
         db.session.add(entry)
         db.session.commit()
+        flash ('Entry %s" has been deleted.' % entry.title, 'success')
         return redirect(url_for('entries.index'))
     
     return render_template('entries/delete.html', entry=entry)
