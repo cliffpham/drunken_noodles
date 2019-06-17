@@ -79,13 +79,13 @@ def image_upload():
 
 
 @entries.route('/<slug>/')
-def detail(slug):
-    entry = Entry.query.filter(Entry.slug == slug).first_or_404()
+def detail(slug): 
+    entry = get_entry_or_404(slug)
     return render_template('entries/detail.html', entry=entry)
 
 @entries.route('/<slug>/edit/', methods=['GET'])
 def edit(slug):
-    entry = Entry.query.filter(Entry.slug == slug).first_or_404()
+    entry = get_entry_or_404(slug)
     form = EntryForm(obj=entry)
     return render_template('entries/edit.html', entry=entry, form=form)
 

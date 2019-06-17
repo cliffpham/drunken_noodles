@@ -28,8 +28,5 @@ def entry_list(template, query, **context):
     return object_list(template, query, **context)
 
 def get_entry_or_404(slug):
-    valid_statuses = (Entry.STATUS_PUBLIC, Entry.STATUS_DRAFT) (Entry.query
-        .filter(
-            (Entry.slug == slug) &
-            (Entry.status.in_(valid_statuses)))
-            .first_or_404())
+    valid_statuses = (Entry.STATUS_PUBLIC, Entry.STATUS_DRAFT) 
+    return Entry.query.filter((Entry.slug == slug) &(Entry.status.in_(valid_statuses))).first_or_404()
