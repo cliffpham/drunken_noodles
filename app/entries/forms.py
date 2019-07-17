@@ -10,6 +10,7 @@ class TagField(wtforms.StringField):
         return ''
 
     def get_tags_from_string(self, tag_string):
+        print('This is the tag_string passed in: ' + tag_string)
         raw_tags = tag_string.split(',')
         tag_names = [name.strip() for name in raw_tags if name.strip()]
         existing_tags = Tag.query.filter(Tag.name.in_(tag_names))

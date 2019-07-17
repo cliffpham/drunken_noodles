@@ -1,6 +1,7 @@
 import os
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for, g
+from flask_login import login_required
 from werkzeug import secure_filename
 
 from helpers import object_list, entry_list, get_entry_or_404
@@ -47,16 +48,18 @@ def tag_detail(slug):
     return object_list('entries/tag_detail.html', entries, tag=tag)
 
 @entries.route('/create/', methods=['GET'])
+@login_required
 def create():
     form = EntryForm()
     return render_template('entries/create.html', form=form)
 
 @entries.route('/create/', methods=['POST'])
+@login_required
 def create_post():
     if request.method == 'POST':
         form = EntryForm(request.form)
         if form.validate():
-            entry = form.save_entry(Entry())
+            entry = form.save_entry(Entry(author=g.user))
             db.session.add(entry)
             db.session.commit()
             flash('Entry "%s" created successfully.' % entry.title, 'success')
@@ -65,6 +68,7 @@ def create_post():
             return 'error'
 
 @entries.route('/image-upload/', methods=['GET', 'POST'])
+@login_required
 def image_upload():
     if request.method == 'POST':
         form = ImageForm(request.form)
@@ -80,18 +84,20 @@ def image_upload():
 
 @entries.route('/<slug>/')
 def detail(slug): 
-    entry = get_entry_or_404(slug)
+    entry = get_entry_or_404(slug, author=None)
     return render_template('entries/detail.html', entry=entry)
 
 @entries.route('/<slug>/edit/', methods=['GET'])
+@login_required
 def edit(slug):
-    entry = get_entry_or_404(slug)
+    entry = get_entry_or_404(slug, author=None)
     form = EntryForm(obj=entry)
     return render_template('entries/edit.html', entry=entry, form=form)
 
 @entries.route('/<slug>/edit/', methods=['POST'])
+@login_required
 def edit_entry(slug):
-    entry = get_entry_or_404(slug)
+    entry = get_entry_or_404(slug, author=None)
     if request.method == 'POST':
         form = EntryForm(request.form, obj=entry)
         if form.validate():
@@ -104,8 +110,9 @@ def edit_entry(slug):
             return 'error'
 
 @entries.route('/<slug>/delete/', methods=['GET', 'POST'])
+@login_required
 def delete(slug):
-    entry = get_entry_or_404(slug)
+    entry = get_entry_or_404(slug, author=None)
     if request.method == "POST":
         entry.status = Entry.STATUS_DELETED
         db.session.add(entry)

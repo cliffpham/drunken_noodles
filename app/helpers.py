@@ -1,4 +1,4 @@
-from flask import render_template, request
+from flask import render_template, request, g
 from models import Entry, Category, Tag
 
 def object_list(template_name, query, paginate_by=5, **context):
@@ -27,6 +27,17 @@ def entry_list(template, query, **context):
             (Entry.body.contains(search)) | (Entry.title.contains(search)))
     return object_list(template, query, **context)
 
-def get_entry_or_404(slug):
-    valid_statuses = (Entry.STATUS_PUBLIC, Entry.STATUS_DRAFT) 
-    return Entry.query.filter((Entry.slug == slug) &(Entry.status.in_(valid_statuses))).first_or_404()
+def get_entry_or_404(slug, author=None):
+    query = Entry.query.filter(Entry.slug == slug)
+    if author:
+        query = query.filter(Entry.author == author)
+    else:
+        query = filter_status_by_user(query)
+    return query.first_or_404()
+
+def filter_status_by_user(query):
+    if not g.user.is_authenticated:
+        return query.filter(Entry.status == Entry.STATUS_PUBLIC)
+    else:
+        return query.filter(
+            Entry.status.in_((Entry.STATUS_PUBLIC, Entry.STATUS_DRAFT)))

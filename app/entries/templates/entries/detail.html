@@ -9,10 +9,12 @@
             <li><a href="{{ url_for('entries.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a></li>
         {% endfor %}
     </ul>
+    {% if g.user == entry.author %}
+        <h4>Actions</h4>
     <a href="{{ url_for('entries.edit', slug=entry.slug) }}">Edit</a>
     <br>
     <a href="{{ url_for('entries.delete', slug=entry.slug) }}">Delete</a>
-
+    {% endif %}
     <p>Published {{ entry.created_timestamp.strftime('%m/%d/%Y')}}</p>
 {% endblock %}
 

@@ -27,12 +27,12 @@ class Entry(db.Model):
     title = db.Column(db.String(100))
     slug = db.Column(db.String(100), unique=True)
     body = db.Column(db.Text)
-    author = db.Column(db.String(100))
     status = db.Column(db.SmallInteger, default=STATUS_PUBLIC)
     created_timestamp = db.Column(db.DateTime, default = datetime.datetime.now)
     modified_timestamp = db.Column(db.DateTime, 
     default = datetime.datetime.now,
     onupdate = datetime.datetime.now)
+    author_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     tags = db.relationship('Tag', secondary = entry_tags,
             backref = db.backref('entries', lazy='dynamic'))
     categories = db.relationship('Category', secondary = entry_categories,
@@ -49,6 +49,14 @@ class Entry(db.Model):
 
     def __repr__(self):
         return '<Entry:%s>' % self.title
+
+    @property
+    def tag_list(self):
+        return ', '.join(tag.name for tag in self.tags)
+
+    @property
+    def tease(self):
+        return self.body[:100]
     
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -70,6 +78,7 @@ class User (db.Model):
     slug = db.Column(db.String(64), unique=True)
     active = db.Column(db.Boolean, default=True)
     created_timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+    entries = db.relationship('Entry', backref='author', lazy='dynamic')
 
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
